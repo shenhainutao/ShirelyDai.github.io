@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>晨间活动单词接龙</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f8ff;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .game-area {
+            margin: 30px 0;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .word-chain {
+            min-height: 50px;
+            border: 2px dashed #aaa;
+            border-radius: 5px;
+            padding: 10px;
+            margin-bottom: 20px;
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            align-items: center;
+        }
+        .chain-word {
+            background-color: #ccffcc;
+            margin: 5px;
+            padding: 10px;
+            border-radius: 5px;
+            display: inline-block;
+            position: relative;
+        }
+        .chain-word::after {
+            content: "→";
+            position: absolute;
+            right: -15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #666;
+        }
+        .chain-word:last-child::after {
+            content: "";
+        }
+        .word-bank {
+            margin: 20px 0;
+        }
+        .word {
+            display: inline-block;
+            background-color: #ffcccc;
+            padding: 10px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .word.used {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        .hint {
+            color: #666;
+            font-style: italic;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+        .score {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 20px 0;
+        }
+        .feedback {
+            margin: 10px 0;
+            font-weight: bold;
+        }
+        .correct {
+            color: green;
+        }
+        .incorrect {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>晨间活动单词接龙</h1>
+        <p>将晨间活动按照正确的顺序排列！点击单词将它们添加到链条中。</p>
+        
+        <div class="score">得分: <span id="score">0</span>/8</div>
+        
+        <div class="game-area">
+            <div class="hint">提示：想想早上起床后你会做什么？</div>
+            <div class="word-chain" id="word-chain">
+                <!-- 单词链将在这里显示 -->
+            </div>
+            
+            <div class="word-bank" id="word-bank">
+                <!-- 单词将在这里生成 -->
+            </div>
+            
+            <div class="feedback" id="feedback"></div>
+            <button onclick="checkOrder()">检查顺序</button>
+            <button onclick="resetGame()">重新开始</button>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const morningActivities = [
+            { word: "wake up", description: "从睡眠中醒来" },
+            { word: "get up", description: "从床上起来" },
+            { word: "have a shower", description: "洗澡" },
+            { word: "towel", description: "用毛巾擦干" },
+            { word: "get dressed", description: "穿衣服" },
+            { word: "toothpaste", description: "使用牙膏" },
+            { word: "toothbrush", description: "使用牙刷" },
+            { word: "have breakfast", description: "吃早餐" }
+        ];
+        
+        // 一个可能的正确顺序（可以有多种合理的顺序）
+        const possibleCorrectOrder = [
+            "wake up",
+            "get up",
+            "have a shower",
+            "towel",
+            "get dressed",
+            "toothpaste",
+            "toothbrush",
+            "have breakfast"
+        ];
+        
+        let selectedWords = [];
+        let score = 0;
+        
+        function initializeGame() {
+            const wordBank = document.getElementById('word-bank');
+            const wordChain = document.getElementById('word-chain');
+            
+            // 清空区域
+            wordBank.innerHTML = '';
+            wordChain.innerHTML = '';
+            
+            // 创建打乱的单词数组
+            const shuffledActivities = [...morningActivities].sort(() => Math.random() - 0.5);
+            
+            // 添加单词到单词库
+            shuffledActivities.forEach(activity => {
+                const wordDiv = document.createElement('div');
+                wordDiv.className = 'word';
+                wordDiv.textContent = activity.word;
+                wordDiv.dataset.word = activity.word;
+                wordDiv.addEventListener('click', selectWord);
+                wordBank.appendChild(wordDiv);
+            });
+            
+            // 重置选择的单词和分数
+            selectedWords = [];
+            score = 0;
+            document.getElementById('score').textContent = score;
+            document.getElementById('feedback').textContent = '';
+            document.getElementById('result').textContent = '';
+        }
+        
+        function selectWord() {
+            if (this.classList.contains('used')) return;
+            
+            // 添加单词到链条
+            const wordChain = document.getElementById('word-chain');
+            const chainWord = document.createElement('div');
+            chainWord.className = 'chain-word';
+            chainWord.textContent = this.dataset.word;
+            wordChain.appendChild(chainWord);
+            
+            // 标记单词为已使用
+            this.classList.add('used');
+            
+            // 添加到选择的单词数组
+            selectedWords.push(this.dataset.word);
+            
+            // 如果选择了8个单词，自动检查顺序
+            if (selectedWords.length === morningActivities.length) {
+                checkOrder();
+            }
+        }
+        
+        function checkOrder() {
+            const feedback = document.getElementById('feedback');
+            
+            if (selectedWords.length < morningActivities.length) {
+                feedback.textContent = "请先选择所有8个单词！";
+                feedback.className = 'feedback incorrect';
+                return;
+            }
+            
+            // 检查顺序的合理性（这里我们简化为检查是否与一个可能的正确顺序匹配）
+            // 在实际应用中，可以有更复杂的逻辑来判断顺序的合理性
+            let correctCount = 0;
+            
+            // 简化的评分：检查每个位置的单词是否与可能的正确顺序匹配
+            for (let i = 0; i < selectedWords.length; i++) {
+                if (selectedWords[i] === possibleCorrectOrder[i]) {
+                    correctCount++;
+                }
+            }
+            
+            // 更新分数
+            score = correctCount;
+            document.getElementById('score').textContent = score;
+            
+            // 显示反馈
+            if (score === morningActivities.length) {
+                feedback.textContent = "完美！你的顺序完全正确！";
+                feedback.className = 'feedback correct';
+                document.getElementById('result').textContent = "恭喜你完成了晨间活动的排序！";
+                document.getElementById('result').style.color = 'green';
+            } else if (score >= 6) {
+                feedback.textContent = "很好！大部分顺序正确！";
+                feedback.className = 'feedback correct';
+            } else if (score >= 4) {
+                feedback.textContent = "不错的尝试！有些顺序需要调整。";
+                feedback.className = 'feedback';
+            } else {
+                feedback.textContent = "再试一次！想想早上的正常顺序。";
+                feedback.className = 'feedback incorrect';
+            }
+        }
+        
+        function resetGame() {
+            initializeGame();
+        }
+        
+        // 初始化游戏
+        initializeGame();
+    </script>
+</body>
+</html>

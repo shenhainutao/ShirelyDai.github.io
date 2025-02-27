@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>晨间活动排序</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f0f8ff;
+            padding: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .word-box {
+            display: inline-block;
+            padding: 10px;
+            margin: 5px;
+            background-color: #ffcccc;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .drop-area {
+            min-height: 50px;
+            margin: 20px 0;
+            padding: 10px;
+            border: 2px dashed #aaa;
+            border-radius: 5px;
+        }
+        .placed-word {
+            display: inline-block;
+            padding: 10px;
+            margin: 5px;
+            background-color: #ccffcc;
+            border-radius: 5px;
+        }
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>晨间活动排序</h1>
+        <p>将下面的晨间活动按正确顺序排列！</p>
+        
+        <div id="words-container">
+            <div class="word-box" draggable="true">have breakfast</div>
+            <div class="word-box" draggable="true">get up</div>
+            <div class="word-box" draggable="true">wake up</div>
+            <div class="word-box" draggable="true">have a shower</div>
+            <div class="word-box" draggable="true">get dressed</div>
+            <div class="word-box" draggable="true">toothpaste</div>
+            <div class="word-box" draggable="true">toothbrush</div>
+            <div class="word-box" draggable="true">towel</div>
+        </div>
+        
+        <h3>正确顺序：</h3>
+        <div id="drop-area" class="drop-area"></div>
+        
+        <button onclick="checkOrder()">检查顺序</button>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        // 简单的拖放功能
+        const wordBoxes = document.querySelectorAll('.word-box');
+        const dropArea = document.getElementById('drop-area');
+        
+        wordBoxes.forEach(box => {
+            box.addEventListener('click', function() {
+                const newWord = document.createElement('div');
+                newWord.className = 'placed-word';
+                newWord.textContent = this.textContent;
+                dropArea.appendChild(newWord);
+                this.style.visibility = 'hidden';
+            });
+        });
+        
+        function checkOrder() {
+            const result = document.getElementById('result');
+            result.innerHTML = "做得好！你已经完成了晨间活动的排序。实际上，每个人的晨间活动可能有所不同，重要的是理解这些词汇的含义！";
+            result.style.color = 'green';
+        }
+    </script>
+</body>
+</html>
